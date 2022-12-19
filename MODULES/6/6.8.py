@@ -1,0 +1,10 @@
+s = input()
+print(s[2])
+print(s[-1])
+print(s[0:5])
+print(s[:len(s)-2])
+print(s[:len(s):2])
+print(s[1:len(s):2])
+s_rev = s[::-1]
+print(s_rev)
+print(s_rev[:len(s_rev):2])
