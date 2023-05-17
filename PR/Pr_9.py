@@ -3,8 +3,8 @@ from pdf2docx import Converter
 from docx2pdf import convert
 from PIL import Image
 
-def showMenu():#эта менюшка показывает нам что можно выбрать
-    print("Текущая директория:" + os.getcwd())   #эта функция показывает нам путь к рабочей папке
+def showMenu():
+    print("Текущая директория:" + os.getcwd())
     print("0:Сменить рабочий каталог")
     print("1:Преобразовать PDF в DOCX")
     print("2:Преобразовать DOCX в PDF")
@@ -13,10 +13,10 @@ def showMenu():#эта менюшка показывает нам что мож�
     print("5:Выход")
 
 def showFilesInDir(filesInDirectory):
-    for i in range(0,len(filesInDirectory)):
-        print(f"{i} : {filesInDirectory[i]}")    #эта функция показывает нам какие файлы есть в директории
+    for i in range(0, len(filesInDirectory)):
+        print(f"{i} : {filesInDirectory[i]}")
 
-def play():  #это точка входа во всю программу, с нее она начинается
+def play():
     showMenu()
     choise = int(input("Введите номер"))
     while choise != 5:
@@ -35,11 +35,11 @@ def play():  #это точка входа во всю программу, с н
         showMenu()
         choise = int(input("Введите номер"))
 
-def changeDir(): # эта функция меняет рабочую директорию
+def changeDir():
     newdirname = input("Введите название директории")
-    if(os.path.exists(newdirname)): #проверяем есть ли такой путь
-        if(os.path.isdir(newdirname)): #проверяем является ли конец пути директорией
-            os.chdir(newdirname) #переходим в директорию
+    if os.path.exists(newdirname):
+        if os.path.isdir(newdirname):
+            os.chdir(newdirname)
     return "вы перешли в директорию:" + newdirname
 
 def convertPDFtoDOCX():
@@ -48,10 +48,9 @@ def convertPDFtoDOCX():
     choise = int(input("выберите файл"))
     pdfFile = filesInDirectory[choise]
     wordFile = pdfFile.replace('.pdf', '.docx')
-    cv = Converter(pdfFile) #вызов функции пакета, которая преводит пдф в докикс
+    cv = Converter(pdfFile)
     cv.convert(wordFile)
     cv.close()
-
 
 def convertDOCXtoPDF():
     filesInDirectory = os.listdir(os.getcwd())
@@ -59,7 +58,7 @@ def convertDOCXtoPDF():
     showFilesInDir(filesInDirectory)
     docxFile = filesInDirectory[choise]
     pdfFile = docxFile.replace('.docx', '.pdf')
-    convert(docxFile) #вызов функции которая переводит докикс в пдф
+    convert(docxFile)
 
 def changeResolution():
     filesInDirectory = os.listdir(os.getcwd())
@@ -70,8 +69,7 @@ def changeResolution():
         print(img.format, img.size, img.format_description)
         if img.mode != "RGB":
             img = img.convert("RGB")
-        img.save(imagePath, "JPEG", optimize=True, quality=1) #данная функция сжимает изображение до 1%
-
+        img.save(imagePath, "JPEG", optimize=True, quality=1)
 
 def deleteGroupOfFiles():
     filesInDirectory = os.listdir(os.getcwd())
@@ -82,7 +80,7 @@ def deleteGroupOfFiles():
         for i in range(0, len(filesInDirectory)):
             if filesInDirectory[i].lower().startswith(substr.lower()):
                 path = f"{os.getcwd()}\{filesInDirectory[i]}"
-                os.remove(path) #удаляет объект по его адресу
+                os.remove(path)
     elif patternType == 1:
         substr = input('Введите постфикс')
         for i in range(0, len(filesInDirectory)):
@@ -98,6 +96,8 @@ def deleteGroupOfFiles():
     elif patternType == 3:
         substr = input('Введите расширение')
         for i in range(0, len(filesInDirectory)):
-            if ('.'+substr.lower()) in filesInDirectory[i].lower():
+            if ('.' + substr.lower()) in filesInDirectory[i].lower():
                 path = f"{os.getcwd()}\{filesInDirectory[i]}"
                 os.remove(path)
+
+play()
