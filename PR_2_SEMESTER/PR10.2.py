@@ -1,49 +1,64 @@
 import os
 import time
 import numpy as np
-from sklearn.cluster import KMeans
 from PIL import Image
+from sklearn.cluster import KMeans
 
-# Определение пути к исходному изображению
-input_path = "input_image.jpg"
+# Путь к исходному изображению
+input_path = "PR_2_SEMESTER\image.jpg"
 
-# Определение пути к папке для сохранения сжатых изображений
-output_dir = "K-means Compressor"
-os.makedirs(output_dir, exist_ok=True)
+# Папка для сохранения сжатых изображений
+output_folder = "K-means Compressor"
 
-# Определение возможных значений количества итераций
-max_iter_values = [1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+# Список возможных значений количества цветов (k)
+k_values = [2, 3, 4, 8, 16, 32, 64, 128, 256]
+
+# Словарь для хранения результатов
+results = {}
 
 # Загрузка исходного изображения
-image = np.array(Image.open(input_path))
+original_image = Image.open(input_path)
+image_array = np.array(original_image)
 
-# Подбор оптимального количества итераций
-best_iter = None
-best_time = float("inf")
-best_quality = float("inf")
-for max_iter in max_iter_values:
-    # Сжатие изображения методом K-means
+# Проход по каждому значению k
+for k in k_values:
+    # Создание экземпляра KMeans с количеством кластеров равным k
+    kmeans = KMeans(n_clusters=k)
+
+    # Замер времени выполнения сжатия
     start_time = time.time()
-    kmeans = KMeans(n_clusters=16, max_iter=max_iter, n_init=1).fit(image.reshape(-1, 3))
-    compressed_image = kmeans.cluster_centers_[kmeans.labels_].reshape(image.shape).astype("uint8")
-    end_time = time.time()
-    
-    # Вычисление времени выполнения и качества сжатия
-    execution_time = end_time - start_time
-    mse = np.mean((image - compressed_image) ** 2)
-    quality = 10 * np.log10(255 ** 2 / mse)
-    
-    # Сохранение сжатого изображения
-    output_path = os.path.join(output_dir, f"compressed_{max_iter}_iters.jpg")
-    Image.fromarray(compressed_image).save(output_path)
-    
-    # Обновление лучшего значения
-    if execution_time < best_time or (execution_time == best_time and quality < best_quality):
-        best_iter = max_iter
-        best_time = execution_time
-        best_quality = quality
 
-# Вывод результата подбора оптимального количества итераций
-print(f"Best number of iterations: {best_iter}")
-print(f"Execution time: {best_time:.3f} seconds")
-print(f"Compression quality: {best_quality:.3f} dB")
+    # Преобразование изображения в массив пикселей
+    pixels = image_array.reshape(-1, 3)
+
+    # Применение алгоритма K-means
+    kmeans.fit(pixels)
+
+    # Получение центров кластеров
+    colors = kmeans.cluster_centers_
+
+    # Замена пикселей на центры кластеров
+    compressed_pixels = colors[kmeans.labels_]
+
+    # Восстановление изображения
+    compressed_image_array = compressed_pixels.reshape(image_array.shape)
+
+    # Сохранение сжатого изображения
+    output_path = os.path.join(output_folder, f"compressed_{k}.jpg")
+    compressed_image = Image.fromarray(compressed_image_array.astype(np.uint8))
+    compressed_image.save(output_path)
+
+    # Вычисление информационного объема сжатого изображения
+    compressed_size = os.path.getsize(output_path)
+
+    # Замер времени выполнения сжатия
+    end_time = time.time()
+    runtime = end_time - start_time
+
+    # Сохранение результатов в словарь
+    results[k] = (compressed_size, runtime)
+
+# Вывод результатов для заполнения таблицы
+print("Количество цветов\tИнформационный объем (K-means)\tВремя выполнения (K-means)")
+for k, (compressed_size, runtime) in results.items():
+    print(f"{k}\t\t\t{compressed_size}\t\t\t{runtime}")

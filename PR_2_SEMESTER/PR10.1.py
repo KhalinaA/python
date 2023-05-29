@@ -1,11 +1,12 @@
 import os
+import time
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 from PIL import Image
 
 # Имя исходного изображения
-image_name = 'image.jpg'
+image_name = 'PR_2_SEMESTER\image.jpg'
 
 # Загружаем изображение и преобразуем в массив NumPy
 image = np.array(Image.open(image_name))
@@ -17,6 +18,10 @@ if not os.path.exists('Scikit Compressor'):
 # Задаем варианты количества цветов
 n_colors = [2, 3, 4, 8, 16, 32, 64, 128, 256]
 
+# Создаем списки для хранения результатов
+information_sizes = []
+execution_times = []
+
 # Проходим по всем вариантам количества цветов
 for n in n_colors:
     # Создаем объект KMeans с количеством кластеров, равным n
@@ -26,7 +31,10 @@ for n in n_colors:
     image_2d = image.reshape(-1, 3)
     
     # Обучаем модель KMeans
+    start_time = time.time()  # Засекаем время начала выполнения
     kmeans.fit(image_2d)
+    end_time = time.time()  # Засекаем время окончания выполнения
+    execution_time = end_time - start_time
     
     # Получаем метки кластеров для каждого пикселя
     labels = kmeans.predict(image_2d)
@@ -41,8 +49,20 @@ for n in n_colors:
     compressed_image = compressed_image.reshape(image.shape)
     
     # Сохраняем получившееся изображение в отдельную папку
-    Image.fromarray(compressed_image).save(f'Scikit Compressor/image_{n}.jpg')
+    save_path = f'Scikit Compressor/image_{n}.jpg'
+    Image.fromarray(compressed_image).save(save_path)
+    
+    # Вычисляем информационный объем (размер файла) сжатого изображения
+    information_size = os.path.getsize(save_path)
+    
+    # Добавляем информационный объем и время выполнения в списки результатов
+    information_sizes.append(information_size)
+    execution_times.append(execution_time)
     
     # Выводим получившееся изображение на экран
     plt.imshow(compressed_image)
     plt.show()
+
+# Выводим результаты для заполнения таблицы
+for i in range(len(n_colors)):
+    print(f'{n_colors[i]:<6} {information_sizes[i]:<10} {execution_times[i]:<20}')
